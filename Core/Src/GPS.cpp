@@ -59,16 +59,16 @@ void Gps::rxCpltCallback()
       // Stop DMA
       hdma->Instance->CCR &= ~DMA_CCR_EN;
       hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;
-      if(buffer_is_ping_)
+      if(buffer_is_pong_)
       {
         updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)ping_, sizeof(ping_));
-        buffer_is_ping_ = false;
+        buffer_is_pong_ = false;
         osEventFlagsSet(uart_rx_event_, PONG_FLAG);
       }
       else
       {
         updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)pong_, sizeof(pong_));
-        buffer_is_ping_ = true;
+        buffer_is_pong_ = true;
         osEventFlagsSet(uart_rx_event_, PING_FLAG);
       }
       /* Enable the TC complete interrupt and error interrupt */

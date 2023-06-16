@@ -32,7 +32,7 @@ private:
 
   uint8_t ping_[MAX_SENTENCE_LENGTH];
   uint8_t pong_[MAX_SENTENCE_LENGTH];
-  bool buffer_is_ping_;
+  bool buffer_is_pong_;
   UART_HandleTypeDef* uart_instance_;
   osEventFlagsId_t uart_rx_event_;                 // Rx Data Ready for processing
   osThreadId_t rx_task_handle_;                    // Rx Task Handle
