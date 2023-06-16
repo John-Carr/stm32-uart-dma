@@ -41,8 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-volatile uint8_t ping[4];
-volatile uint8_t pong[4];
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

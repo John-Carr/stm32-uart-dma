@@ -47,33 +47,7 @@ bool bufferIsPing = true;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-static void updateDma(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength)
-{
-  /* Clear all flags */
-  hdma->DmaBaseAddress->IFCR  = (DMA_FLAG_GL1 << hdma->ChannelIndex);
 
-  /* Configure DMA Channel data length */
-  hdma->Instance->CNDTR = DataLength;
-
-  /* Memory to Peripheral */
-  if ((hdma->Init.Direction) == DMA_MEMORY_TO_PERIPH)
-  {
-    /* Configure DMA Channel destination address */
-    hdma->Instance->CPAR = DstAddress;
-
-    /* Configure DMA Channel source address */
-    hdma->Instance->CMAR = SrcAddress;
-  }
-  /* Peripheral to Memory */
-  else
-  {
-    /* Configure DMA Channel source address */
-    hdma->Instance->CPAR = SrcAddress;
-
-    /* Configure DMA Channel destination address */
-    hdma->Instance->CMAR = DstAddress;
-  }
-}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -164,33 +138,7 @@ void TIM7_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-  uint8_t tmp;
-  UNUSED(tmp);
-  DMA_HandleTypeDef *hdma = huart2.hdmarx;
-  // If this IRQ is caused by a character match
-  if(READ_BIT(huart2.Instance->ISR, USART_ISR_CMF))
-  {
-    // Clear the IRQ
-    SET_BIT(huart2.Instance->ICR, USART_ICR_CMCF);
-    // Change the DMA reg
-    // Stop DMA
-    hdma->Instance->CCR &= ~DMA_CCR_EN;
-    hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;
-    if(bufferIsPing)
-    {
-      updateDma(hdma, (uint32_t)&(&huart2)->Instance->RDR, (uint32_t)pong, sizeof(pong));
-      bufferIsPing = false;
-    }
-    else
-    {
-      updateDma(hdma, (uint32_t)&(&huart2)->Instance->RDR, (uint32_t)ping, sizeof(ping));
-      bufferIsPing = true;
-    }
-    /* Enable the TC complete interrupt and error interrupt */
-    hdma->Instance->CCR |= (DMA_IT_TC | DMA_IT_TE);
-    /* Enable the DMA Peripheral */
-    hdma->Instance->CCR |= DMA_CCR_EN;
-  }
+
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */

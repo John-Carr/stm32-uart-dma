@@ -62,7 +62,7 @@ void StartDefaultTask(void *argument);
 
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-
+void CPP_UserSetup(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -86,15 +86,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  ping[0] = 'j';
-  ping[1] = 'o';
-  ping[2] = 'h';
-  ping[3] = 'n';
 
-  pong[0] = 't';
-  pong[1] = 'e';
-  pong[2] = 's';
-  pong[3] = 't';
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -112,12 +104,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  ATOMIC_CLEAR_BIT(huart2.Instance->CR1, USART_CR1_UE);
-  ATOMIC_SET_BIT(huart2.Instance->CR2, ('z' << USART_CR2_ADD_Pos));
-  ATOMIC_SET_BIT(huart2.Instance->CR3, USART_CR3_OVRDIS);
-  __HAL_UART_ENABLE_IT(&huart2, UART_IT_CM);
-  ATOMIC_SET_BIT(huart2.Instance->CR1, USART_CR1_UE);
-  HAL_UART_Receive_DMA(&huart2, ping, sizeof(ping));
+  CPP_UserSetup();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -317,8 +304,6 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    HAL_UART_Transmit(&huart2, ping, sizeof(ping), HAL_MAX_DELAY);
-    HAL_UART_Transmit(&huart2, pong, sizeof(pong), HAL_MAX_DELAY);
     osDelay(1000);
   }
   /* USER CODE END 5 */
