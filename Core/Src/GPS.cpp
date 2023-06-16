@@ -10,6 +10,13 @@ namespace Drivers {
 Gps::Gps(UART_HandleTypeDef* uart_instance)
 {
   uart_instance_ = uart_instance;
+
+  uart_rx_event_ = osEventFlagsNew(NULL);
+  if (uart_rx_event_ == NULL)
+  {
+      Error_Handler();
+  }
+
   rx_task_handle_ = osThreadNew((osThreadFunc_t)&Gps::HandleReceive, this, &rx_task_attributes_);
   if (rx_task_handle_ == NULL)
   {
@@ -26,14 +33,16 @@ void Gps::HandleReceive()
 {
   while(1)
   {
-    uint32_t flags = osEventFlagsWait(can_rx_event_, (PING_FLAG | PONG_FLAG), osFlagsWaitAny, osWaitForever);
+    uint32_t flags = osEventFlagsWait(uart_rx_event_, (PING_FLAG | PONG_FLAG), osFlagsWaitAny, osWaitForever);
     if(flags & PING_FLAG)
     {
       // Read from the ping buffer
+      HAL_UART_Transmit(uart_instance_, ping_, 50, HAL_MAX_DELAY);
     }
     else
     {
       // Read from the pong buffer
+      HAL_UART_Transmit(uart_instance_, pong_, 50, HAL_MAX_DELAY);
     }
   }
 }
@@ -52,15 +61,15 @@ void Gps::rxCpltCallback()
       hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;
       if(buffer_is_ping_)
       {
-        updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)pong_, sizeof(pong_));
+        updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)ping_, sizeof(ping_));
         buffer_is_ping_ = false;
-        osEventFlagsSet(can_rx_event_, PING_FLAG);
+        osEventFlagsSet(uart_rx_event_, PONG_FLAG);
       }
       else
       {
-        updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)ping_, sizeof(ping_));
+        updateDmaEngine(hdma, (uint32_t)&(uart_instance_->Instance->RDR), (uint32_t)pong_, sizeof(pong_));
         buffer_is_ping_ = true;
-        osEventFlagsSet(can_rx_event_, PONG_FLAG);
+        osEventFlagsSet(uart_rx_event_, PING_FLAG);
       }
       /* Enable the TC complete interrupt and error interrupt */
       hdma->Instance->CCR |= (DMA_IT_TC | DMA_IT_TE);
